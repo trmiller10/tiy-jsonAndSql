@@ -1,11 +1,31 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import spark.Spark;
+import org.h2.tools.Server;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class Main {
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws SQLException{
+        Connection connection;
 
+        //Create service variable, instantiated before testing
+        PlanetsService planetService;
+
+
+        //create a TCP server
+        //make sure H2 dependency is in pom.xml
+        Server server = Server.createTcpServer("-baseDir", "./data").start();
+        //establish connection
+        connection = DriverManager.getConnection("jdbc:h2:" + server.getURL() + "/main", "", null);
+        //instantiate new service
+        planetService = new PlanetsService(connection);
+
+        //initialize database
+        planetService.initDatabase();
         Spark.get(
                 "/planets",
                 (request, response) -> {
