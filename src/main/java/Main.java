@@ -1,11 +1,18 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.sun.org.apache.xpath.internal.operations.Mod;
+import com.sun.tools.internal.ws.processor.model.Model;
+import spark.ModelAndView;
 import spark.Spark;
 import org.h2.tools.Server;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import static spark.Spark.halt;
 
 public class Main {
 
@@ -13,7 +20,7 @@ public class Main {
         Connection connection;
 
         //Create service variable, instantiated before testing
-        PlanetsService planetService;
+        PlanetsService service;
 
 
         //create a TCP server
@@ -22,23 +29,18 @@ public class Main {
         //establish connection
         connection = DriverManager.getConnection("jdbc:h2:" + server.getURL() + "/main", "", null);
         //instantiate new service
-        planetService = new PlanetsService(connection);
+        service = new PlanetsService(connection);
 
         //initialize database
-        planetService.initDatabase();
-        Spark.get(
-                "/planets",
-                (request, response) -> {
-                    // returns an arraylist of all planets
-                    return null;
-                }
-        );
+        service.initDatabase();
+
 
         Spark.get(
-                "/planet",
+                "/",
                 (request, response) -> {
-                    // queryParam for id?
-                    // or maybe a param like :name and request.params(":name") ?
+
+                    service.initDatabase();
+
 
                     Planet planet = new Planet();
                     planet.name = request.params(":name");
@@ -50,6 +52,57 @@ public class Main {
                     moon.name = "Luna";
 
                     planet.moons.add(moon);
+
+//                    service.insertPlanets(connection, planet);
+
+                    return null;
+                }
+
+        );
+
+
+        /**
+         * This endpoint must query from the database of planets and moons and
+         * return an ArrayList of all planets in JSON format.
+         */
+
+        Spark.get(
+                "/planets",
+                (request, response) -> {
+
+                    HashMap hashMapModel = new HashMap();
+                    // returns an arraylist of all planets
+                    //ArrayList<Planet> planetArrayList = service.retrievePlanets(connection);
+
+                    //encode arraylist in JSON
+
+
+
+                    return new ModelAndView(hashMapModel, "planets.mustache");
+                }
+        );
+
+        Spark.get(
+                "/planet",
+                (request, response) -> {
+                    // queryParam for id?
+                    // or maybe a param like :name and request.params(":name") ?
+/*
+                    Planet planet = new Planet();
+                    planet.name = request.params(":name");
+                    planet.distanceFromSun = 1;
+                    planet.radius = 6387; // km
+                    planet.supportsLife = true;
+
+                    Moon moon = new Moon();
+                    moon.name = "Luna";
+
+                    planet.moons.add(moon);*/
+
+                    ArrayList<Moon> earthMoons = new ArrayList<>();
+                    Moon luna = new Moon ("Luna", "white");
+                    earthMoons.add(luna);
+                    Planet planet = new Planet("Earth", 6371, true, 1.00, earthMoons);
 
                     Gson gson = new GsonBuilder().create();
                     return gson.toJson(planet);

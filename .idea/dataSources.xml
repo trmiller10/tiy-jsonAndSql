@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="1467013542">
+  <component name="DataSourceManagerImpl" format="xml" hash="3129842697">
     <data-source source="LOCAL" name="H2 - main@localhost" uuid="c0e4653a-be0c-49c0-a31b-8fbf5486fb04">
       <driver-ref>h2.unified</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.h2.Driver</jdbc-driver>
       <jdbc-url>jdbc:h2:tcp://localhost:9092/main</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="H2 - test" uuid="bc249c93-71ec-47c5-b695-dd595ee37778">
+      <driver-ref>h2.unified</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.h2.Driver</jdbc-driver>
+      <jdbc-url>jdbc:h2:mem:test</jdbc-url>
     </data-source>
   </component>
 </project>
