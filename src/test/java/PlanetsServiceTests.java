@@ -78,7 +78,7 @@ public class PlanetsServiceTests {
             Moon returnedMoon = new Moon();
             returnedMoon.setName(resultsMoon.getString("name"));
             returnedMoon.setColor(resultsMoon.getString("color"));
-            returnedMoon.setPlanetId(resultsMoon.getInt("id"));
+            returnedMoon.setplanet_id(resultsMoon.getInt("id"));
 
             returnedMoons.add(returnedMoon);
         }
@@ -99,7 +99,7 @@ public class PlanetsServiceTests {
     public void testInsertSelect() throws SQLException {
         testService.initDatabase();
 
-        Moon luna = new Moon(1, "Luna", "white");
+        Moon luna = new Moon(1, "Luna", "white", 1);
 
         ArrayList<Moon> earthMoons = new ArrayList<>();
         earthMoons.add(luna);
@@ -115,10 +115,10 @@ public class PlanetsServiceTests {
     @Test
     public void testMultiplePlanetsAndMoons() throws SQLException {
         testService.initDatabase();
-        Moon testOne = new Moon(1, "One", "red");
-        Moon testTwo = new Moon(2, "Two", "blue");
-        Moon testThree = new Moon(3, "Three", "white");
-        Moon testFour = new Moon(4, "Four", "yellow");
+        Moon testOne = new Moon(1, "One", "red", 1);
+        Moon testTwo = new Moon(2, "Two", "blue", 1);
+        Moon testThree = new Moon(3, "Three", "white", 2);
+        Moon testFour = new Moon(4, "Four", "yellow", 2);
 
         ArrayList<Moon> testMoons = new ArrayList<>();
         testMoons.add(testOne);
@@ -149,10 +149,10 @@ public class PlanetsServiceTests {
     @Test
     public void testSelectAllPlanets() throws SQLException{
         testService.initDatabase();
-        Moon testOne = new Moon(1, "One", "red");
-        Moon testTwo = new Moon(2, "Two", "blue");
-        Moon testThree = new Moon(3, "Three", "white");
-        Moon testFour = new Moon(4, "Four", "yellow");
+        Moon testOne = new Moon(1, "One", "red", 1);
+        Moon testTwo = new Moon(2, "Two", "blue", 1);
+        Moon testThree = new Moon(3, "Three", "white", 2);
+        Moon testFour = new Moon(4, "Four", "yellow", 2);
 
         ArrayList<Moon> testMoons = new ArrayList<>();
         testMoons.add(testOne);

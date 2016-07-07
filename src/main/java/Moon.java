@@ -3,7 +3,7 @@ public class Moon {
     int id;
     String name;
     String color;
-    int planetId;
+    int planet_id;
 
     public Moon(){}
 
@@ -12,16 +12,23 @@ public class Moon {
         this.color = color;
     }
 
-    public Moon(String name, String color, int planetId){
+    public Moon(String name, String color, int planet_id){
         this.name = name;
         this.color = color;
-        this.planetId = planetId;
+        this.planet_id = planet_id;
     }
 
     public Moon(int id, String name, String color) {
         this.id = id;
         this.name = name;
         this.color = color;
+    }
+
+    public Moon(int id, String name, String color, int planet_id) {
+        this.id = id;
+        this.name = name;
+        this.color = color;
+        this.planet_id = planet_id;
     }
 
     public int getId() {
@@ -32,12 +39,12 @@ public class Moon {
         this.id = id;
     }
 
-    public int getPlanetId() {
-        return planetId;
+    public int getplanet_id() {
+        return planet_id;
     }
 
-    public void setPlanetId(int planetId) {
-        this.planetId = planetId;
+    public void setplanet_id(int planet_id) {
+        this.planet_id = planet_id;
     }
 
     public String getName() {
