@@ -1,5 +1,6 @@
 import org.h2.tools.Server;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ public class PlanetsServiceTests {
     @Test
     public void testInit() throws SQLException{
 
-        testService.initDatabase();
+        testService.initDatabase(connection);
 
         //assert
         ResultSet tables = connection.createStatement().executeQuery(
@@ -47,78 +48,44 @@ public class PlanetsServiceTests {
             tableNames.add(tables.getString("TABLE_NAME"));
         }
 
-        assertThat(tableNames, hasItems("PLANETS", "MOONS"));
+        assertThat(tableNames, hasItems("PLANET", "MOON", "PLANET_MOON"));
     }
 
     /**
      * Given: an H2 database and Planets and Moons classes
-     * When: test Moons objects inserted into Planets table with SQL OTHER command
-     * Then: test Moons objects returned
+     * When: Planet and Moon inserted into database and then queried by planet id
+     * Then: Planet and Moon returned
      */
     @Test
-    public void testPlanetDatabase() throws SQLException {
+    public void testObjectTables() throws SQLException {
 
-        testService.initDatabase();
+        testService.initDatabase(connection);
 
-        Moon luna = new Moon(1, "Luna", "white");
-
-        ArrayList<Moon> earthMoons = new ArrayList<>();
-        earthMoons.add(luna);
-        Planet earth = new Planet("Earth", 6371, true, 1.00, earthMoons);
-
-        testService.insertPlanet(earth);
-
-        ResultSet resultsPlanets = connection.createStatement().executeQuery(
-                "SELECT * FROM PLANETS");
-        ResultSet resultsMoon = connection.createStatement().executeQuery(
-                "SELECT * FROM MOONS");
-
-        ArrayList<Moon> returnedMoons = new ArrayList<>();
-        if(resultsMoon.next()){
-            Moon returnedMoon = new Moon();
-            returnedMoon.setName(resultsMoon.getString("name"));
-            returnedMoon.setColor(resultsMoon.getString("color"));
-            returnedMoon.setplanet_id(resultsMoon.getInt("id"));
-
-            returnedMoons.add(returnedMoon);
-        }
-        Planet returnedPlanet = new Planet();
-        if(resultsPlanets.next()){
-            returnedPlanet.setId(resultsPlanets.getInt("id"));
-            returnedPlanet.setName(resultsPlanets.getString("name"));
-            returnedPlanet.setRadius(resultsPlanets.getInt("radius"));
-            returnedPlanet.setSupportsLife(resultsPlanets.getBoolean("supports_life"));
-            returnedPlanet.setDistanceFromSun(resultsPlanets.getDouble("distance_from_sun"));
-            returnedPlanet.setMoons(returnedMoons);
-        }
-
-        assertThat(earth.getId(), is(returnedPlanet.getId()));
-    }
-
-    @Test
-    public void testInsertSelect() throws SQLException {
-        testService.initDatabase();
-
-        Moon luna = new Moon(1, "Luna", "white", 1);
+        Moon luna = new Moon("Luna", "white");
 
         ArrayList<Moon> earthMoons = new ArrayList<>();
         earthMoons.add(luna);
+
         Planet earth = new Planet("Earth", 6371, true, 1.00, earthMoons);
 
-        testService.insertPlanet(earth);
+        testService.insertPlanet(connection, earth);
 
-        Planet returnPlanet = testService.selectPlanet(1);
+        Planet testPlanet = testService.returnPlanet(connection, 1);
 
-        assertThat(returnPlanet.getRadius(), is(earth.getRadius()));
+        ArrayList<Moon> returnedMoons = testPlanet.getMoons();
+
+
+        assertThat(earth.getId(), is(testPlanet.getId()));
+        assertThat(earthMoons.size(), is(returnedMoons.size()));
     }
 
     @Test
     public void testMultiplePlanetsAndMoons() throws SQLException {
-        testService.initDatabase();
-        Moon testOne = new Moon(1, "One", "red", 1);
-        Moon testTwo = new Moon(2, "Two", "blue", 1);
-        Moon testThree = new Moon(3, "Three", "white", 2);
-        Moon testFour = new Moon(4, "Four", "yellow", 2);
+        testService.initDatabase(connection);
+        Moon testOne = new Moon("One", "red");
+        Moon testTwo = new Moon("Two", "blue");
+        Moon testThree = new Moon("Three", "white");
+        Moon testFour = new Moon("Four", "yellow");
 
         ArrayList<Moon> testMoons = new ArrayList<>();
         testMoons.add(testOne);
@@ -127,14 +94,14 @@ public class PlanetsServiceTests {
         exMoons.add(testThree);
         exMoons.add(testFour);
 
-        Planet planetTest = new Planet(1, "Test", 1234, true, 1.00, testMoons);
-        Planet planetEx = new Planet(2, "X", 5678, false, 2.00, exMoons);
+        Planet planetTest = new Planet("Test", 1234, true, 1.00, testMoons);
+        Planet planetEx = new Planet("X", 5678, false, 2.00, exMoons);
 
-        testService.insertPlanet(planetTest);
-        testService.insertPlanet(planetEx);
+        testService.insertPlanet(connection, planetTest);
+        testService.insertPlanet(connection, planetEx);
 
-        Planet planetOne = testService.selectPlanet(1);
-        Planet planetTwo = testService.selectPlanet(2);
+        Planet planetOne = testService.returnPlanet(connection, 1);
+        Planet planetTwo = testService.returnPlanet(connection, 2);
 
         assertThat(planetOne.getId(), is(planetTest.getId()));
         assertThat(planetTwo.getRadius(), is(planetEx.getRadius()));
@@ -145,14 +112,14 @@ public class PlanetsServiceTests {
         assertFalse(planetTwo.getMoons().stream().anyMatch(o -> o.getName().equals(testOne.getName())));
         assertFalse(planetTwo.getMoons().stream().anyMatch(o -> o.getName().equals(testTwo.getName())));
     }
-
+/*
     @Test
     public void testSelectAllPlanets() throws SQLException{
-        testService.initDatabase();
-        Moon testOne = new Moon(1, "One", "red", 1);
-        Moon testTwo = new Moon(2, "Two", "blue", 1);
-        Moon testThree = new Moon(3, "Three", "white", 2);
-        Moon testFour = new Moon(4, "Four", "yellow", 2);
+        testService.initDatabase(connection);
+        Moon testOne = new Moon("One", "red");
+        Moon testTwo = new Moon("Two", "blue");
+        Moon testThree = new Moon("Three", "white");
+        Moon testFour = new Moon("Four", "yellow");
 
         ArrayList<Moon> testMoons = new ArrayList<>();
         testMoons.add(testOne);
@@ -164,17 +131,18 @@ public class PlanetsServiceTests {
         Planet planetTest = new Planet(1, "Test", 1234, true, 1.00, testMoons);
         Planet planetEx = new Planet(2, "X", 5678, false, 2.00, exMoons);
 
-        testService.insertPlanet(planetTest);
-        testService.insertPlanet(planetEx);
+        testService.insertPlanet(connection, planetTest);
+        testService.insertPlanet(connection, planetEx);
 
         ArrayList<Planet> controlPlanetList = new ArrayList<>();
         controlPlanetList.add(planetTest);
         controlPlanetList.add(planetEx);
 
-        ArrayList<Planet> allPlanetsList = testService.selectAllPlanets();
+        ArrayList<Planet> allPlanetsList = testService.returnAllPlanets();
 
         assertTrue(allPlanetsList.equals(controlPlanetList));
     }
+*/
 
 
     @After
@@ -185,5 +153,7 @@ public class PlanetsServiceTests {
         cleanStat.execute("DROP TABLE IF EXISTS moons");
         cleanStat.execute("DROP TABLE IF EXISTS moon");
         cleanStat.execute("DROP TABLE IF EXISTS planet");
+        cleanStat.execute("DROP TABLE IF EXISTS planet_moon");
+        cleanStat.execute("DROP TABLE IF EXISTS planet_moons");
     }
 }

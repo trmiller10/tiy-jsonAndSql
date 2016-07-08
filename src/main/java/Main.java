@@ -32,14 +32,14 @@ public class Main {
         service = new PlanetsService(connection);
 
         //initialize database
-        service.initDatabase();
+        service.initDatabase(connection);
 
 
         Spark.get(
                 "/",
                 (request, response) -> {
 
-                    service.initDatabase();
+                    service.initDatabase(connection);
 
 
                     Planet planet = new Planet();

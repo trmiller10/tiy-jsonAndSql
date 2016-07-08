@@ -14,46 +14,78 @@ public class PlanetsService {
         this.connection = connection;
     }
 
-    public void initDatabase() throws SQLException {
+    public void initDatabase(Connection connection) throws SQLException {
         Statement stat = connection.createStatement();
 
-        stat.execute("CREATE TABLE IF NOT EXISTS planets (id IDENTITY, name VARCHAR, radius INT, supports_life BOOLEAN, distance_from_sun DOUBLE)");
-        stat.execute("CREATE TABLE IF NOT EXISTS moons (id IDENTITY, name VARCHAR, color VARCHAR, planet_id INT)");
+        stat.execute("DROP TABLE IF EXISTS planets");
+        stat.execute("DROP TABLE IF EXISTS moons");
+        stat.execute("DROP TABLE IF EXISTS planet_moons");
+
+        stat.execute("CREATE TABLE IF NOT EXISTS planet (" +
+                "id IDENTITY, " +
+                "name VARCHAR, " +
+                "radius INT, " +
+                "supports_life BOOLEAN, " +
+                "distance_from_sun DOUBLE," +
+                "PRIMARY KEY (id))");
+
+        stat.execute("CREATE TABLE IF NOT EXISTS moon (" +
+                "id IDENTITY, " +
+                "name VARCHAR, " +
+                "color VARCHAR," +
+                "PRIMARY KEY (id))");
+
+        stat.execute("CREATE TABLE IF NOT EXISTS planet_moon(" +
+                "planet_id INT, " +
+                "moon_id INT, " +
+                "CONSTRAINT planet_id_fk FOREIGN KEY (planet_id) REFERENCES planet (id), " +
+                "CONSTRAINT moon_id_fk FOREIGN KEY (moon_id) REFERENCES moon (id))");
+    //PRIMARY KEY (id),
+        //CONSTRAINT user_id_fk FOREIGN KEY(user_id) REFERENCES users (id)
+
     }
 
-    public void insertPlanet(Planet planet) throws SQLException {
-        PreparedStatement prepStat = connection.prepareStatement("INSERT INTO planets VALUES (NULL, ?, ?, ?, ?)");
+    public void insertPlanet(Connection connection, Planet planet) throws SQLException {
+        PreparedStatement prepStat = connection.prepareStatement("INSERT INTO planet VALUES (NULL, ?, ?, ?, ?)");
         prepStat.setString(1, planet.getName());
         prepStat.setInt(2, planet.getRadius());
         prepStat.setBoolean(3, planet.isSupportsLife());
         prepStat.setDouble(4, planet.getDistanceFromSun());
-
-
         prepStat.execute();
 
-        ResultSet results = prepStat.getGeneratedKeys();
-        results.next();
-        planet.setId(results.getInt(1));
+        ResultSet resultSet = prepStat.getGeneratedKeys();
+        resultSet.next();
+        planet.setId(resultSet.getInt(1));
         
         for(Moon moon : planet.getMoons()){
-            PreparedStatement moonPrepStat = connection.prepareStatement("INSERT INTO moons VALUES (NULL, ?, ?, ?)");
+            PreparedStatement moonPrepStat = connection.prepareStatement("INSERT INTO moon VALUES (NULL, ?, ?)");
             moonPrepStat.setString(1, moon.getName());
             moonPrepStat.setString(2, moon.getColor());
-            moonPrepStat.setInt(3, planet.getId());
             moonPrepStat.execute();
 
-            ResultSet rs = moonPrepStat.getGeneratedKeys();
-            rs.next();
-            moon.setId(rs.getInt(1));
+            ResultSet moonResultSet = moonPrepStat.getGeneratedKeys();
+            moonResultSet.next();
+            moon.setId(moonResultSet.getInt(1));
+
+            linkPlanetAndMoons(connection, planet, moon);
         }
     }
+    public void linkPlanetAndMoons(Connection connection, Planet planet, Moon moon) throws SQLException{
+        PreparedStatement prepStat = connection.prepareStatement("INSERT INTO planet_moon VALUES (?, ?)");
 
-    public Planet selectPlanet(int planet_id) throws SQLException {
-        PreparedStatement prepStat = connection.prepareStatement("SELECT * FROM planets LEFT JOIN moons ON planets.id = moons.planet_id WHERE planets.id = ?");
-        prepStat.setInt(1, planet_id);
+        prepStat.setInt(1, planet.getId());
+        prepStat.setInt(2, moon.getId());
+        prepStat.execute();
+    }
+
+
+    public Planet returnPlanet(Connection connection, int planetId) throws SQLException {
+        PreparedStatement prepStat = connection.prepareStatement("SELECT * FROM planet WHERE id = ?");
+        prepStat.setInt(1, planetId);
         Planet planet = new Planet();
 
         ResultSet resultSet = prepStat.executeQuery();
+
         while (resultSet.next()){
             planet.setId(resultSet.getInt("id"));
             planet.setName(resultSet.getString("name"));
@@ -61,19 +93,44 @@ public class PlanetsService {
             planet.setSupportsLife(resultSet.getBoolean("supports_life"));
             planet.setDistanceFromSun(resultSet.getDouble("distance_from_sun"));
 
-            Moon moon = new Moon();
-            moon.setId(resultSet.getInt("moons.id"));
-            moon.setName(resultSet.getString("moons.name"));
-            moon.setColor(resultSet.getString("moons.color"));
-            moon.setplanet_id(resultSet.getInt("moons.planet_id"));
+            PreparedStatement planetMoonStat = connection.prepareStatement("SELECT * FROM planet_moon WHERE planet_id = ?");
+            planetMoonStat.setInt(1, planetId);
 
-            planet.getMoons().add(moon);
+            ResultSet resultIds = planetMoonStat.executeQuery();
+            int moonId;
+            ArrayList<Moon> returnedMoonList = new ArrayList<>();
+
+            while (resultIds.next()){
+                moonId = resultIds.getInt("planet_moon.moon_id");
+
+                Moon moon = returnMoon(connection, moonId);
+
+                returnedMoonList.add(moon);
+            }
+            planet.setMoons(returnedMoonList);
         }
 
         return planet;
     }
+    public Moon returnMoon(Connection connection, int moonId) throws SQLException{
+        PreparedStatement moonPrepStat = connection.prepareStatement("SELECT * FROM moon WHERE id = ?");
+        moonPrepStat.setInt(1, moonId);
+        //maybe there is a conflict with previously-named moonResultSet?
+        //RESOLVED: no, forgot if(moonResult.next())
+        ResultSet moonResult = moonPrepStat.executeQuery();
+        Moon moon = new Moon();
+
+        if (moonResult.next()) {
+            moon.setId(moonId);
+            moon.setName(moonResult.getString("name"));
+            moon.setColor(moonResult.getString("color"));
+        }
+        return moon;
+    }
+
+/*
     public ArrayList<Planet> selectAllPlanets() throws SQLException {
-        PreparedStatement prepStat = connection.prepareStatement("SELECT * FROM planets");
+        PreparedStatement prepStat = connection.prepareStatement("SELECT * FROM planet");
 
         ResultSet resultSet = prepStat.executeQuery();
         ArrayList<Planet> allPlanets = new ArrayList<>();
@@ -82,32 +139,32 @@ public class PlanetsService {
 
             Planet planet = new Planet();
 
-            planet.setId(resultSet.getInt("planets.id"));
-            planet.setName(resultSet.getString("planets.name"));
-            planet.setRadius(resultSet.getInt("planets.radius"));
-            planet.setSupportsLife(resultSet.getBoolean("planets.supports_life"));
-            planet.setDistanceFromSun(resultSet.getDouble("planets.distance_from_sun"));
+            planet.setId(resultSet.getInt("planet.id"));
+            planet.setName(resultSet.getString("planet.name"));
+            planet.setRadius(resultSet.getInt("planet.radius"));
+            planet.setSupportsLife(resultSet.getBoolean("planet.supports_life"));
+            planet.setDistanceFromSun(resultSet.getDouble("planet.distance_from_sun"));
 
             allPlanets.add(planet);
 
-            PreparedStatement moonPrepStat = connection.prepareStatement("SELECT * FROM MOONS WHERE planet_id = ?");
+            PreparedStatement moonPrepStat = connection.prepareStatement("SELECT * FROM moon WHERE planet_id = ?");
             moonPrepStat.setInt(1, planet.getId());
             ResultSet moonResultSet = moonPrepStat.executeQuery();
 
             while (moonResultSet.next()){
                 Moon moon = new Moon();
 
-                moon.setId(resultSet.getInt("moons.id"));
-                moon.setName(resultSet.getString("moons.name"));
-                moon.setColor(resultSet.getString("moons.color"));
-                moon.setplanet_id(resultSet.getInt("moons.planet_id"));
+                moon.setId(resultSet.getInt("moon.id"));
+                moon.setName(resultSet.getString("moon.name"));
+                moon.setColor(resultSet.getString("moon.color"));
+                moon.setplanet_id(resultSet.getInt("moon.planet_id"));
 
                 planet.getMoons().add(moon);
             }
 
         }
         return allPlanets;
-    }
+    }*/
 /*
     public void initDatabase(Connection connection) throws SQLException {
 
@@ -183,19 +240,6 @@ public class PlanetsService {
         return returnedPlanet;
     }
 */
-
-
-
-/*
-    public void linkPlanetAndMoons(Connection connection, Planet planet, Moon moon) throws SQLException{
-        PreparedStatement prepStat = connection.prepareStatement("INSERT INTO planet_moon VALUES (?, ?)");
-
-        prepStat.setInt(1, planet.getplanet_id());
-        prepStat.setInt(2, moon.getMoonId());
-        prepStat.execute();
-
-
-    }*/
     /*
     public Planet createPlanetsAndMoons(Connection connection) throws SQLException {
 
