@@ -40,7 +40,7 @@ public class PlanetsService {
                 "moon_id INT, " +
                 "CONSTRAINT planet_id_fk FOREIGN KEY (planet_id) REFERENCES planet (id), " +
                 "CONSTRAINT moon_id_fk FOREIGN KEY (moon_id) REFERENCES moon (id))");
-    //PRIMARY KEY (id),
+        //PRIMARY KEY (id),
         //CONSTRAINT user_id_fk FOREIGN KEY(user_id) REFERENCES users (id)
 
     }
@@ -70,6 +70,7 @@ public class PlanetsService {
             linkPlanetAndMoons(connection, planet, moon);
         }
     }
+
     public void linkPlanetAndMoons(Connection connection, Planet planet, Moon moon) throws SQLException{
         PreparedStatement prepStat = connection.prepareStatement("INSERT INTO planet_moon VALUES (?, ?)");
 
@@ -112,6 +113,7 @@ public class PlanetsService {
 
         return planet;
     }
+
     public Moon returnMoon(Connection connection, int moonId) throws SQLException{
         PreparedStatement moonPrepStat = connection.prepareStatement("SELECT * FROM moon WHERE id = ?");
         moonPrepStat.setInt(1, moonId);
@@ -128,43 +130,21 @@ public class PlanetsService {
         return moon;
     }
 
-/*
-    public ArrayList<Planet> selectAllPlanets() throws SQLException {
+
+    public ArrayList<Planet> returnAllPlanets() throws SQLException {
         PreparedStatement prepStat = connection.prepareStatement("SELECT * FROM planet");
 
         ResultSet resultSet = prepStat.executeQuery();
+
         ArrayList<Planet> allPlanets = new ArrayList<>();
 
         while(resultSet.next()){
-
-            Planet planet = new Planet();
-
-            planet.setId(resultSet.getInt("planet.id"));
-            planet.setName(resultSet.getString("planet.name"));
-            planet.setRadius(resultSet.getInt("planet.radius"));
-            planet.setSupportsLife(resultSet.getBoolean("planet.supports_life"));
-            planet.setDistanceFromSun(resultSet.getDouble("planet.distance_from_sun"));
+            Planet planet = returnPlanet(connection, resultSet.getInt("id"));
 
             allPlanets.add(planet);
-
-            PreparedStatement moonPrepStat = connection.prepareStatement("SELECT * FROM moon WHERE planet_id = ?");
-            moonPrepStat.setInt(1, planet.getId());
-            ResultSet moonResultSet = moonPrepStat.executeQuery();
-
-            while (moonResultSet.next()){
-                Moon moon = new Moon();
-
-                moon.setId(resultSet.getInt("moon.id"));
-                moon.setName(resultSet.getString("moon.name"));
-                moon.setColor(resultSet.getString("moon.color"));
-                moon.setplanet_id(resultSet.getInt("moon.planet_id"));
-
-                planet.getMoons().add(moon);
-            }
-
         }
         return allPlanets;
-    }*/
+    }
 /*
     public void initDatabase(Connection connection) throws SQLException {
 
@@ -240,30 +220,24 @@ public class PlanetsService {
         return returnedPlanet;
     }
 */
-    /*
-    public Planet createPlanetsAndMoons(Connection connection) throws SQLException {
 
-
-        String name;
-    int radius;
-    boolean supportsLife;
-    double distanceFromSun;
+    public void createPlanetsAndMoons(Connection connection) throws SQLException {
 
     ArrayList<Moon> moons = new ArrayList<>();
 
         ArrayList<Moon> mercuryMoons = new ArrayList<>();
         Planet mercury = new Planet("Mercury", 2440, false, 0.47, mercuryMoons);
-        //insertPlanets(connection, mercury);
+        insertPlanet(connection, mercury);
 
         ArrayList<Moon> venusMoons = new ArrayList<>();
         Planet venus = new Planet("Venus", 6052, false, 0.73, venusMoons);
-        //insertPlanets(connection, venus);
+        insertPlanet(connection, venus);
 
         ArrayList<Moon> earthMoons = new ArrayList<>();
         Moon luna = new Moon ("Luna", "white");
         earthMoons.add(luna);
         Planet earth = new Planet("Earth", 6371, true, 1.00, earthMoons);
-        //insertPlanets(connection, earth);
+        insertPlanet(connection, earth);
 
         ArrayList<Moon> marsMoons = new ArrayList<>();
         Moon phobos = new Moon ("Phobos", "gray");
@@ -271,7 +245,7 @@ public class PlanetsService {
         marsMoons.add(phobos);
         marsMoons.add(deimos);
         Planet mars = new Planet("Mars", 3390, false, 1.67, marsMoons);
-       // insertPlanets(connection, mars);
+        insertPlanet(connection, mars);
 
         ArrayList<Moon> jupiterMoons = new ArrayList<>();
         Moon io = new Moon("Io", "orange");
@@ -283,7 +257,7 @@ public class PlanetsService {
         jupiterMoons.add(ganymede);
         jupiterMoons.add(callisto);
         Planet jupiter = new Planet("Jupiter", 69911, false, 5.45, jupiterMoons);
-       // insertPlanets(connection, jupiter);
+        insertPlanet(connection, jupiter);
 
         ArrayList<Moon> saturnMoons = new ArrayList<>();
         Moon titan = new Moon("Titan", "yellow");
@@ -301,7 +275,7 @@ public class PlanetsService {
         saturnMoons.add(enceladus);
         saturnMoons.add(mimas);
         Planet saturn = new Planet("Saturn", 58232, false, 10.1, saturnMoons);
-        //insertPlanets(connection, saturn);
+        insertPlanet(connection, saturn);
 
 
         ArrayList<Moon> uranusMoons = new ArrayList<>();
@@ -312,7 +286,7 @@ public class PlanetsService {
         uranusMoons.add(titania);
         uranusMoons.add(umbriel);
         Planet uranus = new Planet("Uranus", 25362, false, 20.11, uranusMoons);
-        //insertPlanets(connection, uranus);
+        insertPlanet(connection, uranus);
 
         ArrayList<Moon> neptuneMoons = new ArrayList<>();
         Moon triton = new Moon("Triton", "brown/blue");
@@ -322,10 +296,7 @@ public class PlanetsService {
         neptuneMoons.add(proteus);
         neptuneMoons.add(nereid);
         Planet neptune = new Planet("Neptune", 24622, false, 30.3, neptuneMoons);
-        //insertPlanets(connection, neptune);
-
-        return null;
+        insertPlanet(connection, neptune);
     }
-*/
 }
 

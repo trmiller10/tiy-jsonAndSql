@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -112,9 +113,9 @@ public class PlanetsServiceTests {
         assertFalse(planetTwo.getMoons().stream().anyMatch(o -> o.getName().equals(testOne.getName())));
         assertFalse(planetTwo.getMoons().stream().anyMatch(o -> o.getName().equals(testTwo.getName())));
     }
-/*
+
     @Test
-    public void testSelectAllPlanets() throws SQLException{
+    public void testReturnAllPlanets() throws SQLException{
         testService.initDatabase(connection);
         Moon testOne = new Moon("One", "red");
         Moon testTwo = new Moon("Two", "blue");
@@ -140,9 +141,28 @@ public class PlanetsServiceTests {
 
         ArrayList<Planet> allPlanetsList = testService.returnAllPlanets();
 
-        assertTrue(allPlanetsList.equals(controlPlanetList));
+        assertThat(controlPlanetList.size(), is(allPlanetsList.size()));
     }
-*/
+
+    @Test
+    public void testCreatePlanetsAndMoons() throws SQLException {
+        testService.initDatabase(connection);
+        testService.createPlanetsAndMoons(connection);
+
+        ArrayList<Planet> solarSystem = testService.returnAllPlanets();
+
+        for (Planet planet : solarSystem) {
+
+            System.out.println(planet.getName() + "," + planet.getDistanceFromSun()  + "," + planet.getRadius()  + "," + planet.isSupportsLife() + ",");
+
+            ArrayList<Moon> allMoons = planet.getMoons();
+
+            for (Moon moon : allMoons) {
+
+                System.out.println(moon.getName() + "," + moon.getColor());
+            }
+        }
+    }
 
 
     @After
