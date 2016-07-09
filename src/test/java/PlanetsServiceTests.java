@@ -31,6 +31,11 @@ public class PlanetsServiceTests {
         testService = new PlanetsService(connection);
     }
 
+    /**
+     * This test checks to make sure all the tables are created properly.
+     * @throws SQLException
+     */
+
     @Test
     public void testInit() throws SQLException{
 
@@ -57,6 +62,7 @@ public class PlanetsServiceTests {
      * When: Planet and Moon inserted into database and then queried by planet id
      * Then: Planet and Moon returned
      */
+
     @Test
     public void testObjectTables() throws SQLException {
 
@@ -80,6 +86,13 @@ public class PlanetsServiceTests {
         assertThat(earthMoons.size(), is(returnedMoons.size()));
     }
 
+    /**
+     * Given: H2 database with multiple planets, with multiple moons
+     * When: database queried with planet id
+     * Then: planets with moons returned
+     *
+     * @throws SQLException
+     */
     @Test
     public void testMultiplePlanetsAndMoons() throws SQLException {
         testService.initDatabase(connection);
@@ -114,6 +127,13 @@ public class PlanetsServiceTests {
         assertFalse(planetTwo.getMoons().stream().anyMatch(o -> o.getName().equals(testTwo.getName())));
     }
 
+    /**
+     * Given: H2 database with multiple planets, with multiple moons
+     * When: H2 queried for all planets, with all moons
+     * Then: all planets and moons returned, with no duplicates
+     * @throws SQLException
+     */
+
     @Test
     public void testReturnAllPlanets() throws SQLException{
         testService.initDatabase(connection);
@@ -143,6 +163,13 @@ public class PlanetsServiceTests {
 
         assertThat(controlPlanetList.size(), is(allPlanetsList.size()));
     }
+
+    /**
+     * Given: PlanetsService, with method createPlanetsAndMoons() that generates multiple planets, with multiple moons
+     * When: createPlanetsAndMoons() is run
+     * Then: All generated objects are printed out
+     * @throws SQLException
+     */
 
     @Test
     public void testCreatePlanetsAndMoons() throws SQLException {

@@ -21,6 +21,10 @@ public class PlanetsService {
         stat.execute("DROP TABLE IF EXISTS moons");
         stat.execute("DROP TABLE IF EXISTS planet_moons");
 
+        stat.execute("DROP TABLE IF EXISTS planet");
+        stat.execute("DROP TABLE IF EXISTS moon");
+        stat.execute("DROP TABLE IF EXISTS planet_moon");
+
         stat.execute("CREATE TABLE IF NOT EXISTS planet (" +
                 "id IDENTITY, " +
                 "name VARCHAR, " +
@@ -145,85 +149,8 @@ public class PlanetsService {
         }
         return allPlanets;
     }
-/*
-    public void initDatabase(Connection connection) throws SQLException {
-
-        Statement statement = connection.createStatement();
-
-        statement.execute("CREATE TABLE IF NOT EXISTS planets (id IDENTITY, name VARCHAR, radius INT, supportsLife BOOLEAN, distanceFromSun DOUBLE)");
-
-        //statement.execute("CREATE TABLE IF NOT EXISTS moons (moon_id IDENTITY, name VARCHAR, color VARCHAR)");
-        statement.execute("CREATE TABLE IF NOT EXISTS moons (id IDENTITY, name VARCHAR, color VARCHAR, planet_id INT)");
-
-        //statement.execute("CREATE TABLE IF NOT EXISTS planet_moon (planet_id INT, moon_id INT)");
-    }
-
-    public void insertPlanetsAndMoons(Planet planet) throws SQLException {
-
-        PreparedStatement prepStat = connection.prepareStatement("INSERT INTO planets VALUES (NULL, ?, ?, ?, ?)");
-
-        prepStat.setString(1, planet.name);
-        prepStat.setInt(2, planet.radius);
-        prepStat.setBoolean(3, planet.supportsLife);
-        prepStat.setDouble(4, planet.distanceFromSun);
-
-        //getGeneratedKeys() will return the generated id
-        ResultSet resultSet = prepStat.getGeneratedKeys();
-        resultSet.next();
-        //read the first line of results
-        //set the generated id into planet
-        planet.setplanet_id(resultSet.getInt(1));
-
-        ArrayList<Moon> moonArrayList = planet.getMoons();
-
-        for (Moon moon : planet.moons){
-            moon.setplanet_id(planet.planet_id);
-            insertMoon(moon);
-        }
-    }
-
-    public void insertMoon(Moon moon) throws SQLException {
-        PreparedStatement prepStat = connection.prepareStatement("INSERT INTO moons VALUES (NULL, ?, ?, ?)");
-
-        prepStat.setString(1, moon.name);
-        prepStat.setString(2, moon.color);
-        prepStat.setInt(3, moon.planet_id);
-        prepStat.execute();
-
-        ResultSet resultSet = prepStat.getGeneratedKeys();
-        resultSet.next();
-        moon.setId(resultSet.getInt(1));
-    }
-
-    public Planet selectPlanet(int planet_id) throws SQLException{
-        PreparedStatement prepStat = connection.prepareStatement("SELECT * FROM planets LEFT JOIN moons ON planets.id = moons.planet_id WHERE planets.id = ?");
-
-        prepStat.setInt(1, planet_id);
-        ResultSet resultsPlanets = prepStat.executeQuery();
-
-        Planet returnedPlanet = new Planet();
-        while(resultsPlanets.next()){
-            returnedPlanet.setplanet_id(resultsPlanets.getInt("id"));
-            returnedPlanet.setName(resultsPlanets.getString("name"));
-            returnedPlanet.setRadius(resultsPlanets.getInt("radius"));
-            returnedPlanet.setSupportsLife(resultsPlanets.getBoolean("supportsLife"));
-            returnedPlanet.setDistanceFromSun(resultsPlanets.getDouble("distanceFromSun"));
-
-            Moon returnedMoon = new Moon();
-            returnedMoon.setId(resultsPlanets.getInt("moons.id"));
-            returnedMoon.setName(resultsPlanets.getString("moons.name"));
-            returnedMoon.setColor(resultsPlanets.getString("moons.color"));
-
-            returnedPlanet.moons.add(returnedMoon);
-        }
-
-        return returnedPlanet;
-    }
-*/
 
     public void createPlanetsAndMoons(Connection connection) throws SQLException {
-
-    ArrayList<Moon> moons = new ArrayList<>();
 
         ArrayList<Moon> mercuryMoons = new ArrayList<>();
         Planet mercury = new Planet("Mercury", 2440, false, 0.47, mercuryMoons);
