@@ -139,7 +139,7 @@ public class PlanetsServiceTests {
         controlPlanetList.add(planetTest);
         controlPlanetList.add(planetEx);
 
-        ArrayList<Planet> allPlanetsList = testService.returnAllPlanets();
+        ArrayList<Planet> allPlanetsList = testService.returnAllPlanets(connection);
 
         assertThat(controlPlanetList.size(), is(allPlanetsList.size()));
     }
@@ -149,7 +149,7 @@ public class PlanetsServiceTests {
         testService.initDatabase(connection);
         testService.createPlanetsAndMoons(connection);
 
-        ArrayList<Planet> solarSystem = testService.returnAllPlanets();
+        ArrayList<Planet> solarSystem = testService.returnAllPlanets(connection);
 
         for (Planet planet : solarSystem) {
 

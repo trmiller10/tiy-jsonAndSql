@@ -2,9 +2,21 @@
 
 <body>
 
+
+{{^allPlanets}}
+    no planets
+{{/allPlanets}}
+
+{{#allPlanets}}
+    {{id}}
+    {{name}}
+    {{radius}}
+    {{supportsLife}}
+    {{distanceFromSun}}
+{{/allPlanets}}
 <p>
     {{#planets}}
-        <a href="/planet?id={{id}}">{{name}}</a>
+        <a href="/planet/:{{id}}"></a>
     {{/planets}}
 </p>
 

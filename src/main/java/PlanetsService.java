@@ -131,7 +131,7 @@ public class PlanetsService {
     }
 
 
-    public ArrayList<Planet> returnAllPlanets() throws SQLException {
+    public ArrayList<Planet> returnAllPlanets(Connection connection) throws SQLException {
         PreparedStatement prepStat = connection.prepareStatement("SELECT * FROM planet");
 
         ResultSet resultSet = prepStat.executeQuery();
